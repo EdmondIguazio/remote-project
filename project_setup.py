@@ -10,7 +10,7 @@ def setup(project: mlrun.projects.MlrunProject) -> mlrun.projects.MlrunProject:
                         image="mlrun/mlrun")
     
     project.set_workflow(
-        name="workflow", workflow_path="./src/workflow.py", image="mlrun/mlrun"
+        name="workflow", workflow_path="./src/workflow.py", image="mlrun/mlrun-kfp"
     )
 
     project.save()
