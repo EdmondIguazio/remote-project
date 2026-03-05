@@ -8,6 +8,11 @@ def setup(project: mlrun.projects.MlrunProject) -> mlrun.projects.MlrunProject:
                         name="func",
                         kind="job",
                         image="mlrun/mlrun")
+
+    project.set_function(func="./src/func.py",
+                        name="func2",
+                        kind="job",
+                        image="mlrun/mlrun")
     
     project.set_workflow(
         name="workflow", workflow_path="./src/workflow.py", image="mlrun/mlrun-kfp"
