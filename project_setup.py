@@ -16,7 +16,8 @@ def setup(project: mlrun.projects.MlrunProject) -> mlrun.projects.MlrunProject:
 
     sj = project.set_function(kind="spark", 
                               func="./src/func-spark.py", 
-                              name="sparktest")
+                              name="sparktest", 
+                              image="edmondg/spark-mlrun:1.10.2")
 
     sj.with_driver_limits(cpu="1300m")
     sj.with_driver_requests(cpu=1, mem="512m")
