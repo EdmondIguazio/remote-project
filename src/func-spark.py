@@ -1,31 +1,46 @@
+from ai4d.validation.validators.local import validate
+from ai4d.validation.rule import CheckType, ColumnType, DescriptionRule
 from pyspark.sql import SparkSession
-from mlrun import get_or_create_ctx
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
+from pyspark.sql import functions as F
 
 def handler(context):
 
-  # build spark session
-  spark = SparkSession.builder.appName("Spark job").getOrCreate()
+    spark = SparkSession.builder.getOrCreate()
+    df = spark.createDataFrame([
+            ("Alice", 25, "Gold"),
+            ("Bob", 35, "Silver"),
+            ("Charlie", 45, "Bronze"),
+        ], ["name", "age", "customer_type"])
 
-  schema = StructType([
-    StructField("id",     IntegerType(), False),
-    StructField("name",   StringType(),  True),
-    StructField("age",    IntegerType(),  True),
-    StructField("salary", DoubleType(),   True),
-    StructField("city",   StringType(),   True),
-  ])
+    # Define validation rules
+    rules = [
+         DescriptionRule(
+             rule_id=None,
+             check="validation",
+             for_validation=True,
+             for_correction=False,
+             table="customers",
+             column_name="age",
+             column_type=ColumnType.NUMBER,
+             operator=CheckType.IN_RANGE,
+             value=(18, 65),
+             filters=None,
+         ),
+         DescriptionRule(
+             rule_id=None,
+             check="validation",
+             for_validation=True,
+             for_correction=False,
+             table="customers",
+             column_name="customer_type",
+             column_type=ColumnType.STRING,
+             operator=CheckType.EQUAL,
+             value="Gold",
+             filters=F.col("age") >= 30,
+         ),
+     ]
 
-  data = [
-    (1, "Alice",   30, 75000.0, "New York"),
-    (2, "Bob",     25, 55000.0, "London"),
-    (3, "Charlie", 35, 90000.0, "San Francisco"),
-    (4, "Diana",   28, 62000.0, "Berlin"),
-    (5, "Eve",     42, 110000.0, "Tokyo"),
-  ]
-
-  df = spark.createDataFrame(data, schema=schema)
-
-  df.show()
-  
-  spark.stop()
+    # Validate the DataFrame
+    result = validate(df, rules, return_error_df=True)
+    context.logger.info(f"Validated {result.num_validated} rules, found {result.num_errors} error")
+    context.logger.info(f"Validation score: {result.score}")
