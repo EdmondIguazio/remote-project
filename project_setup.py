@@ -17,7 +17,9 @@ def setup(project: mlrun.projects.MlrunProject) -> mlrun.projects.MlrunProject:
     sj = project.set_function(kind="spark", 
                               func="./src/func-spark.py", 
                               name="sparktest", 
-                              image="edmondg/spark-mlrun:1.10.2")
+                              image="iguazioqa.azurecr.io/spark-ai4d:1.9")
+
+    sj.set_image_pull_configuration(image_pull_secret_name="azure-ecr")
 
     sj.with_driver_limits(cpu="1300m")
     sj.with_driver_requests(cpu=1, mem="512m")
